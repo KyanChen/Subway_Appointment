@@ -12,8 +12,9 @@ from util import(
     parse_json,
     DEFAULT_HEADER
 )
-
+# https://webui.mybti.cn/#/selecttime?lineName=%E6%98%8C%E5%B9%B3%E7%BA%BF&stationName=%E6%B2%99%E6%B2%B3%E7%AB%99
 BASE_URL="https://webapi.mybti.cn"
+# BASE_URL="https://webui.mybti.cn"
 
 class Subway(object):
     def __init__(self):
@@ -21,7 +22,7 @@ class Subway(object):
         self.send_message = global_config.getboolean('messenger', 'enable')
         self.messenger = Messenger(global_config.get('messenger', 'sckey')) if self.send_message else None
 
-    def make_reserve_by_time(self,lineName,stationName,enterDate,timeSlot,begin_time,retry=2,interval=2):
+    def make_reserve_by_time(self,lineName,stationName,enterDate,timeSlot,begin_time,retry=5,interval=2):
         """预约地铁。
         :param lineName: 几号线（昌平线）
         :param stationName: 地铁站名（沙河站）
@@ -52,8 +53,8 @@ class Subway(object):
         url = BASE_URL+"/Appointment/CreateAppointment"
         data = {"lineName": lineName, "snapshotWeekOffset": 0, "stationName": stationName, "enterDate": enterDate,
             "snapshotTimeSlot": "0630-0930", "timeSlot": timeSlot}
-        result = requests.post(url, json=data, headers=self.header,verify=False)
-        resp_json =parse_json(result.text)
+        result = requests.post(url, json=data, headers=self.header, verify=False)
+        resp_json = parse_json(result.text)
         if(resp_json['balance']<0):
             logger.error(result.text)
             self.messenger.send(text='预约失败：%s' % result.text)
